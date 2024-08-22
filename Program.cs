@@ -1,37 +1,101 @@
-﻿using ClosedXML.Excel;
+﻿using System.Net.Http.Json;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using System.Text;
 using System.Web;
 
 namespace SendMessageFromWhatsApp
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task SendSms(string apiUrl, string apiKey, string sender, string recipient, string message)
         {
-            var contacts = LoadContactsFromExcel("C:\\Users\\Ahmed E. Rizk\\Desktop\\contacts.xlsx");
-            IWebDriver driver = new ChromeDriver();
-
-            try
+           
+        }
+        static async Task Main(string[] args)
+        {
+          var  credentials = new Dictionary<string, string>
             {
-                // افتح واتساب ويب
-                driver.Navigate().GoToUrl("https://web.whatsapp.com");
+                { "username", "DEXEFCOAPI" }, // Replace with your Victory Link username
+                { "password", "L/Bsy3s]+&" }, // Replace with your Victory Link password
+                { "language", "English" }, // Replace with the language code
+                { "sender", "DexefCompany" }   // Replace with your sender ID
+            };
+          var data = new Dictionary<string, string>
+          {
+              { "message", "Hello World" },    // Replace with your message content
+              { "to", "+201030454205" }        // Replace with the recipient phone number
+          };
+          var parameters = new Dictionary<string, string>
+          {
+              { "UserName", credentials["username"] },
+              { "Password", credentials["password"] },
+              { "SMSText", data["message"] },
+              { "SMSLang", credentials["language"] },
+              { "SMSSender", credentials["sender"] },
+              { "SMSReceiver", data["to"] }
+          };
 
-                // انتظر المستخدم لمسح رمز QR
-                Console.WriteLine("Please scan the QR code with your phone.");
-                Thread.Sleep(15000); // انتظر 15 ثانية لمسح رمز QR
 
-                foreach (var contact in contacts)
-                {
-                    SendMessage(driver, contact.Item1, contact.Item2);
-                    Thread.Sleep(3000); // انتظر 3 ثوانٍ بين كل رسالة
-                }
-            }
-            finally
-            {
-                // أغلق المتصفح
-                driver.Quit();
-            }
+            string apiUrl = "https://smsvas.vlserv.com/VLSMSPlatformResellerAPI/NewSendingAPI/api/SMSSender/SendToMany"; 
+
+            string apiKey = "L/Bsy3s]+&"; // Replace with your Victory Link API key
+            string sender = "DEXEFCOAPI"; // Replace with your sender ID
+            string recipient = "+201030454205"; // Replace with the recipient phone number
+            string message = "888"; // Re
+             using (HttpClient client = new HttpClient())
+             {
+
+
+                //var payload = new
+                // {
+                //     apiKey = apiKey,
+                //     sender = sender,
+                //     recipient = recipient,
+                //     message = message
+                // };
+                // //pnBdQQg5SDizttpmktguwA== 
+                 var jsonPayload = Newtonsoft.Json.JsonConvert.SerializeObject(parameters);
+                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                 try
+                 {
+                     HttpResponseMessage response = await client.PostAsync(apiUrl, content);
+                     response.EnsureSuccessStatusCode();
+                     string responseBody = await response.Content.ReadAsStringAsync();
+                     Console.WriteLine("SMS sent successfully. Response: " + responseBody);
+                 }
+                 catch (HttpRequestException e)
+                 {
+                     Console.WriteLine("Error sending SMS: " + e.Message);
+                 }
+             }
+            //            var contacts = LoadContactsFromExcel("C:\\Users\\Ahmed E. Rizk\\Desktop\\contacts.xlsx");
+            //IWebDriver driver = new ChromeDriver();
+
+            //try
+            //{
+            //    // افتح واتساب ويب
+            //    driver.Navigate().GoToUrl("https://web.whatsapp.com");
+
+            //    // انتظر المستخدم لمسح رمز QR
+            //    Console.WriteLine("Please scan the QR code with your phone.");
+            //    Thread.Sleep(15000); // انتظر 15 ثانية لمسح رمز QR
+
+            //    foreach (var contact in contacts)
+            //    {
+            //        SendMessage(driver, contact.Item1, contact.Item2);
+            //        Thread.Sleep(3000); // انتظر 3 ثوانٍ بين كل رسالة
+            //    }
+            //}
+            //finally
+            //{
+            //    // أغلق المتصفح
+            //    driver.Quit();
+            //}
         }
 
 
